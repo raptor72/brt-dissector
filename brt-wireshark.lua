@@ -81,13 +81,24 @@ function BRT.dissector(buf, pinfo, tree)
                 end
             end  		
 
+
+        elseif mtype == 528 then			
+	    pinfo.cols.info:set("Re-Authorize Voice request")
+            subtree:add(buf(start_i+2,2), "Re-Authorize Voice request: " .. buf(start_i+2,2))
+	    
+	    for i = 1,modo do
+                if buf(start_i+i, 4):uint() == 983044 then 
+                    subtree:add(buf(start_i+i+4,4), "ConversationTime: " .. buf(start_i+i+4,4):uint())
+                end
+	    end
+
 	    
         elseif mtype == 784 then
             pinfo.cols.info:set("Authorize Voice confirm")
             subtree:add(buf(start_i+2,2), "Authorire voice confirm: " .. buf(start_i+2,2))
 
             for i = 1,modo do
-                if buf(start_i+i, 4):uint() == 4194305 then -- 00:40:00:01 trying find charge
+                if buf(start_i+i, 4):uint() == 4194305 then -- 00:40:00:01
                     if buf(start_i+i+4,1):uint() == 1 then
                         subtree:add(buf(start_i+i+4,1), "Charge: " .. buf(start_i+i+4,1):uint()):append_text(" Charging")
                     elseif buf(start_i+i+4,1):uint() == 0 then
@@ -95,11 +106,11 @@ function BRT.dissector(buf, pinfo, tree)
                     end
                 end
                        
-                if buf(start_i+i, 4):uint() == 1835012 then -- 00:1c:00:04 trying fing max_vol 
+                if buf(start_i+i, 4):uint() == 1835012 then -- 00:1c:00:04
                     subtree:add(buf(start_i+i+4,4), "MaxVolume: " .. buf(start_i+i+4,4):uint())
                 end
             
-                if buf(start_i+i, 4):uint() == 1179649 then -- 00:12:00:01 trying find disconnect   
+                if buf(start_i+i, 4):uint() == 1179649 then -- 00:12:00:01  
                     if buf(start_i+i+4,1):uint() == 1 then
                         subtree:add(buf(start_i+i+4,1), "Disconnect: " .. buf(start_i+i+4,1):uint()):append_text(" True")
                     elseif buf(start_i+i+4,1):uint() == 0 then
@@ -107,7 +118,7 @@ function BRT.dissector(buf, pinfo, tree)
                     end
                 end
      
-                if buf(start_i+i, 4):uint() == 4259841 then -- 00:41:00:01 trying find fci  
+                if buf(start_i+i, 4):uint() == 4259841 then -- 00:41:00:01
                     if buf(start_i+i+4,1):uint() == 1 then
                         subtree:add(buf(start_i+i+4,1), "FurnishChargingInformation: " .. buf(start_i+i+4,1):uint()):append_text(" True")
                     elseif buf(start_i+i+4,1):uint() == 0 then
@@ -122,12 +133,12 @@ function BRT.dissector(buf, pinfo, tree)
             subtree:add(buf(start_i,2), "Authorize voice reject: " .. buf(start_i,2))
 
             for i = 1, modo do         
-                if buf(start_i+i, 4):uint() == 1245188 then -- 00:13:00:04 error_code 
+                if buf(start_i+i, 4):uint() == 1245188 then -- 00:13:00:04
 		    local error = buf(start_i+i+4,4)
                     err_handler(error)
                 end
 		
-                if buf(start_i+i, 4):uint() == 2490372 then -- 00:26:00:04 release  
+                if buf(start_i+i, 4):uint() == 2490372 then -- 00:26:00:04
                     local rel = buf(start_i+i+4, 4)
                     rc_handler(rel)
                 end
@@ -139,25 +150,25 @@ function BRT.dissector(buf, pinfo, tree)
             subtree:add(buf(2,2), "End voice request: " .. buf(2,2))
             local Endreason = buf(32,1):uint()
             if Endreason == 00 then
-                subtree:add(buf(32,1), "Edndreason OK (0) " .. buf(32,1)):append_text(" [Command text]")            
+                subtree:add(buf(32,1), "Edndreason OK (0) " .. buf(32,1))      
             else
                 subtree:add(buf(32,1), "End reason " .. buf(32,1))
             end
              
             for i = 1,modo do         
-                if buf(start_i+i, 4):uint() == 262148 then -- 00:04:00:04 attempt  
+                if buf(start_i+i, 4):uint() == 262148 then -- 00:04:00:04
                     subtree:add(buf(start_i+i+4,4), "CallAttemptElapsedTime: " .. buf(start_i+i+4,4):uint())
                 end
    
-                if buf(start_i+i, 4):uint() == 917527 then -- 00:0e:00:17 stop_time     
+                if buf(start_i+i, 4):uint() == 917527 then -- 00:0e:00:17   
                     subtree:add(buf(start_i+i+4,23), "CallStopTime: " .. buf(start_i+i+4,23):string())
                 end
      
-                if buf(start_i+i, 4):uint() == 327684 then -- 00:05:00:04 connect 
+                if buf(start_i+i, 4):uint() == 327684 then -- 00:05:00:04
                     subtree:add(buf(start_i+i+4,4), "CallConnectedElapsedTime: " .. buf(start_i+i+4,4):uint())
                 end
 
-                if buf(start_i+i, 4):uint() == 2490372 then -- 00:26:00:04 release   
+                if buf(start_i+i, 4):uint() == 2490372 then -- 00:26:00:04 
                     local rel = buf(start_i+i+4, 4)
                     rc_handler(rel)
                 end
@@ -169,7 +180,7 @@ function BRT.dissector(buf, pinfo, tree)
             subtree:add(buf(start_i+2,2), "End voice ack: " .. buf(start_i+2,2))
                 
             for i = 1,modo do     
-                if buf(start_i+i, 4):uint() == 1245188 then -- 00:13:00:04 error_code 
+                if buf(start_i+i, 4):uint() == 1245188 then -- 00:13:00:04
 		    local error = buf(start_i+i+4,4)
                     err_handler(error)
                 end
@@ -182,33 +193,33 @@ function BRT.dissector(buf, pinfo, tree)
             subtree:add(buf(32,4), "ServiceKey: " .. buf(32,4):uint())
 
             for i = 1,modo do 
-                if buf(start_i+i, 4):uint() == 1048587 then  -- DestinationRoutingNumber
+                if buf(start_i+i, 4):uint() == 1048587 then
                     subtree:add(buf(start_i+i+4, 11), "DestinationRoutingNumber: " .. buf(start_i+i+4, 11):string())
                 end        
             
-                if buf(start_i+i, 4):uint() == 655371 then -- 00:0a:00:0b CallingPartyNumber
+                if buf(start_i+i, 4):uint() == 655371 then -- 00:0a:00:0b
                     subtree:add(buf(start_i+i+4, 11), "CallingPartyNumber: " .. buf(start_i+i+4, 11):string())
                 end
             
-                if buf(start_i+i, 4):uint() == 3014667 then -- smscadress 
+                if buf(start_i+i, 4):uint() == 3014667 then
                     subtree:add(buf(start_i+i+4, 11), "SMSCAddressNumber: " .. buf(start_i+i+4, 11):string())
                 end
             
-                if buf(start_i+i, 4):uint() == 1507343 then -- 00:17:00:0f imsi
+                if buf(start_i+i, 4):uint() == 1507343 then -- 00:17:00:0f
                     subtree:add(buf(start_i+i+4,15), "IMSI: " .. buf(start_i+i+4, 15):string())
                 end
             
-                if buf(start_i+i, 4):uint() == 3145736 then -- 00:30:00:08 time and timezone
+                if buf(start_i+i, 4):uint() == 3145736 then -- 00:30:00:08
                     subtree:add(buf(start_i+i+4,4), "Date: " .. buf(start_i+i+4,4))
                     subtree:add(buf(start_i+i+8,3), "Time: " .. buf(start_i+i+8,3))
                     subtree:add(buf(start_i+i+11,1), "Timezone: " .. buf(start_i+i+11,1))
                 end
               
-                if buf(start_i+i, 4):uint() == 3604491 then -- vlr
+                if buf(start_i+i, 4):uint() == 3604491 then
                     subtree:add(buf(start_i+i+4,11), "VLRAddressNumber: " .. buf(start_i+i+4, 11):string())
                 end
 
-                if buf(start_i+i, 4):uint() == 1638422 then -- 00:19:00:16 -- LocationInformationMSC
+                if buf(start_i+i, 4):uint() == 1638422 then -- 00:19:00:16
                     subtree:add(buf(start_i+i+4,22), "LocationInformationMSC: " .. buf(start_i+i+4, 22))
                 end
             end
@@ -219,7 +230,7 @@ function BRT.dissector(buf, pinfo, tree)
             subtree:add(buf(start_i,2), "Authorize sms confirm: " .. buf(start_i,2))
             
             for i = 1,modo do
-                if buf(start_i+i, 4):uint() == 4194305 then -- 00:40:00:01 charge
+                if buf(start_i+i, 4):uint() == 4194305 then -- 00:40:00:01
                     if buf(start_i+i+4,1):uint() == 1 then
                         subtree:add(buf(start_i+i+4,1), "Charge: " .. buf(start_i+i+4,1):uint()):append_text(" Charging")
                     elseif buf(start_i+i+4,1):uint() == 0 then
@@ -227,7 +238,7 @@ function BRT.dissector(buf, pinfo, tree)
                     end
                 end
        
-                if buf(start_i+i, 4):uint() == 4259841 then -- 00:41:00:01 fci
+                if buf(start_i+i, 4):uint() == 4259841 then -- 00:41:00:01
                     if buf(start_i+i+4,1):uint() == 1 then
                         subtree:add(buf(start_i+i+4,1), "FurnishChargingInformation: " .. buf(start_i+i+4,1):uint()):append_text(" True")
                     elseif buf(start_i+i+4,1):uint() == 0 then
@@ -242,12 +253,12 @@ function BRT.dissector(buf, pinfo, tree)
             subtree:add(buf(start_i,2), "Authorize SMS reject: " .. buf(start_i,2))
 
             for i = 1, modo do         
-                if buf(start_i+i, 4):uint() == 1245188 then -- 00:13:00:04 error_code 
+                if buf(start_i+i, 4):uint() == 1245188 then -- 00:13:00:04
 		    local error = buf(start_i+i+4,4)
 		    err_handler(error)
 		end
 
-                if buf(start_i+i, 4):uint() == 2621444 then -- 00:28:00:04 sms release
+                if buf(start_i+i, 4):uint() == 2621444 then -- 00:28:00:04
 		    local rel = buf(start_i+i+4,4)
 		    if rel:uint() == 21 then
 		        subtree:add(rel, "ReleaseCauseSMS: " .. rel:uint()):append_text(" Short message transfer rejected (21)")						
@@ -263,7 +274,7 @@ function BRT.dissector(buf, pinfo, tree)
             subtree:add(buf(2,2), "End sms request: " .. buf(2,2))
               
             for i = 1,modo do         
-                if buf(start_i+i, 4):uint() == 3801089 then -- 00:26:00:04 endreason 
+                if buf(start_i+i, 4):uint() == 3801089 then -- 00:26:00:04 
                     local endreason = buf(start_i+i+4, 1):uint()
                     if endreason == 0 then
                         subtree:add(buf(start_i+i+4,1), "EndReason: " .. buf(start_i+i+4,1):uint()):append_text(" Ok (0)")
@@ -272,7 +283,7 @@ function BRT.dissector(buf, pinfo, tree)
                     end
                 end
                      
-                if buf(start_i+i, 4):uint() == 3080193 then -- smsstatus  
+                if buf(start_i+i, 4):uint() == 3080193 then 
                     local smsstatus = buf(start_i+i+4, 1):uint()
                     if smsstatus == 0 then
                         subtree:add(buf(start_i+i+4,1), "SMSStatus: " .. buf(start_i+i+4,1):uint()):append_text(" Submitted (0x00)")
@@ -288,7 +299,7 @@ function BRT.dissector(buf, pinfo, tree)
             subtree:add(buf(2,2), "End sms ack: " .. buf(2,2))
 	    
             for i = 1,modo do         
-                if buf(start_i+i, 4):uint() == 1245188 then -- 00:13:00:04 error_code 
+                if buf(start_i+i, 4):uint() == 1245188 then -- 00:13:00:04
 		    local error = buf(start_i+i+4,4)
                     err_handler(error)
                 end
