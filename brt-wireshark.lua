@@ -325,5 +325,5 @@ function BRT.dissector(buf, pinfo, tree)
 end
 
 local tcp_dissector_table = DissectorTable.get("tcp.port") 
-dissector = tcp_dissector_table:get_dissector(28000) 
-tcp_dissector_table:add(28000, BRT)
+dissector = tcp_dissector_table:get_dissector(35111) 
+tcp_dissector_table:add(35111, BRT)
